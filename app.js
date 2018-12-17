@@ -9,6 +9,7 @@ var express = require('express')
   , http = require('http')
   , path = require('path')
   , devicedataservice = require('./modules/devicedataservice')
+  , dataservices = require('./modules/dataservices')
   , mongoose = require('mongoose');
 
 var favicon = require('serve-favicon');
@@ -36,8 +37,17 @@ if ('development' == app.get('env')) {
   //app.use(express.errorHandler());
 }
 
-var dbURI = "mongodb://heroku_trvs3b4b:kt9743v0m78u7s219ts6i4btrs@ds123399.mlab.com:23399/heroku_trvs3b4b";
+var dbURI = "mongodb://localhost/BikerCourierDB";
+
+if (process.env.NODE_ENV === 'production') {
+ dbURI = "mongodb://heroku_trvs3b4b:kt9743v0m78u7s219ts6i4btrs@ds123399.mlab.com:23399/heroku_trvs3b4b";
+}
+
+console.log('Connecting to DB ' + dbURI);
+
 mongoose.connect(dbURI);
+
+console.log('Connected to DB ' + dbURI);
 
 var MobileDeviceMappingSchema = new mongoose.Schema({
 	MobileNumber: Number,
@@ -45,7 +55,137 @@ var MobileDeviceMappingSchema = new mongoose.Schema({
 	TimeStamp : Date
 });
 
+var BikerCourierMappingSchema = new mongoose.Schema({
+	Id: {type: String, required: true, unique: true },
+	FirstName: {type: String, required: true},
+	LastName: {type: String},
+	DOB : Date,
+	Age : {type:Number},
+	Gender: String,
+	FullAddress: String,
+	Landmark: String,
+	City: String,
+	State: String,
+	PinCode: String,
+	IsActive: Boolean,
+	Mobile:String,
+	ImageURL: String,
+	IDImageURL: String,
+	IsApproved: String,
+	Rating: String,
+	Reviews: [{
+		UserRating: String,
+		UserReview: String,
+		UserName: String,
+		UserCompany:String
+	}],
+	Location: 
+	{
+		Longitute: String,
+		Latitude: String,
+		City: String,
+		State: String,
+		PinCode: String,
+		Country: String,
+		District: String,
+		AreaName: String
+		
+	}	
+});
+
+var CompanyPersonMappingSchema = new mongoose.Schema({
+	Id: {type: String, required: true, unique: true },
+	FirstName: {type: String, required: true},
+	LastName: {type: String},
+	DOB : Date,
+	Age : {type:Number},
+	Gender: String,
+	CompanyName: String,
+	CompanyDesignation: String,
+	FullAddress: String,
+	Landmark: String,
+	City: String,
+	State: String,
+	PinCode: String,
+	IsActive: Boolean,
+	Mobile:String,
+	ImageURL: String,
+	IDImageURL: String,
+	IsApproved: String,
+	Rating: String,
+	Reviews: [{
+		UserRating: String,
+		UserReview: String,
+		UserName: String,
+		UserCompany:String
+	}],
+	Location: 
+	{
+		Longitute: String,
+		Latitude: String,
+		City: String,
+		State: String,
+		PinCode: String,
+		Country: String,
+		District: String,
+		AreaName: String
+	}		
+});
+
+var PinCodeMappingSchema = new mongoose.Schema({
+	PinCode : String,
+	City: String,
+	State: String,
+	District: String,
+	Area: String,
+	HeadOffice: String
+	
+});
+
+var MessageMappingSchema = new mongoose.Schema({
+	Id: {type: String, required: true, unique: true },
+	From: 
+	{
+	  Type: String,
+	  Id: String,
+	  FullName: String,
+	  MobileNumber: String,
+	  
+	},
+Message:
+	{
+	  MessageBody: String,
+	  MessageTitle: String
+	},
+To:
+	[
+	  {
+	    Type: String,
+	    Id: String,
+	    FullName: String,
+	    MobileNumber:String,
+	    Status: String,
+	    NoOfPackets: {type:Number},
+	    PinCode: String,
+	    Area: String,
+	    
+	  } 
+	],
+
+DateofMsg: Date,
+Status: String
+	
+});
+
 var MobileDevice = mongoose.model('MobileDevice', MobileDeviceMappingSchema);
+
+var BikerCourier = mongoose.model('BikerCourier', BikerCourierMappingSchema);
+
+var CompanyPerson = mongoose.model('CompanyPerson', CompanyPersonMappingSchema);
+
+var PinCodes = mongoose.model('PinCodes', PinCodeMappingSchema);
+
+var Messages = mongoose.model('Messages', MessageMappingSchema);
 
 app.get('/', routes.index);
 app.get('/users', user.list);
@@ -62,7 +202,7 @@ app.post('/Ashu', function(request, response){
 	console.log(request.body.Age);
 })
 
-app.get('/devices/:MobileNumber', function(request, response) {
+app.get('/getdevicesByMobile/:MobileNumber', function(request, response) {
 	response.header("Access-Control-Allow-Origin", "*");
 	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	console.log(request.url + ' : querying for ' +
@@ -109,6 +249,185 @@ app.get('/devices/:DeviceId', function(request, response) {
 	devicedataservice.findDeviceByDeviceID(MobileDevice, request.params.DeviceId,
 	response);
 	});
+
+app.put('/BikerCourier', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	console.log(request.body);
+	dataservices.createBikerCourier(BikerCourier, request.body, response);
+	});
+
+app.post('/BikerCourier', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	dataservices.updateBikerCourier(BikerCourier, request.body, response);
+	});
+
+app.get('/BikerCourierByMobile/:MobileNumber', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	console.log(request.url + ' : querying for ' +
+	request.params.MobileNumber);
+	dataservices.findBikerCourierByMobileNumber(BikerCourier, request.params.MobileNumber,
+	response);
+	});
+
+app.del('/delBikerCourierByMobile/:MobileNumber', function(request,response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	console.log('request.params.MobileNumber');
+	console.log(request.params.MobileNumber);
+	dataservices.deleteBikerCourierByMobileNumber(BikerCourier, request.params.MobileNumber, response);
+	});
+
+app.del('/delBikerCourier/:Id', function(request,response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	console.log('request.params.Id');
+	console.log(request.params.Id);
+	dataservices.deleteBikerCourier(BikerCourier, request.params.Id, response);
+	});
+	
+app.get('/BikerCourier', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		console.log('Listing all device with ' + request.params.key +
+				'=' + request.params.value);
+		dataservices.listBikerCourier(BikerCourier, response);
+	});
+
+app.get('/getBikerCourierByPinCode/:PinCode', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		
+		dataservices.listBikerCourierByPinCode(BikerCourier, PinCodes, request.params.PinCode, response);
+	});
+
+app.get('/getBikerCourierByCity/:City', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		
+		dataservices.listBikerCourierByCity(BikerCourier, request.params.City, response);
+	});
+
+app.get('/BikerCourier/:Id', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	console.log(request.url + ' : querying for ' +
+	request.params.Id);
+	dataservices.findBikerCourierByID(BikerCourier, request.params.Id,
+	response);
+	});
+
+app.put('/CompanyPerson', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	console.log(request.body);
+	dataservices.createCompanyPerson(CompanyPerson, request.body, response);
+	});
+
+app.post('/CompanyPerson', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	dataservices.updateCompanyPerson(CompanyPerson, request.body, response);
+	});
+
+app.get('/CompanyPersonByMobile/:MobileNumber', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	console.log(request.url + ' : querying for ' +
+	request.params.MobileNumber);
+	dataservices.findCompanyPersonByMobileNumber(CompanyPerson, request.params.MobileNumber,
+	response);
+	});
+
+
+
+app.del('/delCompanyPersonByMobile/:MobileNumber', function(request,response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	console.log('request.params.MobileNumber');
+	console.log(request.params.MobileNumber);
+	dataservices.deleteCompanyPersonByMobileNumber(CompanyPerson, request.params.MobileNumber, response);
+	});
+
+app.del('/delCompanyPerson/:Id', function(request,response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	console.log('request.params.Id');
+	console.log(request.params.Id);
+	dataservices.deleteCompanyPerson(CompanyPerson, request.params.Id, response);
+	});
+	
+app.get('/CompanyPerson', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		console.log('Listing all device with ' + request.params.key +
+				'=' + request.params.value);
+		dataservices.listCompanyPerson(CompanyPerson, response);
+	});
+
+app.get('/getCompanyPersonByPinCode/:PinCode', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		
+		dataservices.listCompanyPersonByPinCode(CompanyPerson, PinCodes, request.params.PinCode, response);
+	});
+
+app.get('/CompanyPersonByCity/:City', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		
+		dataservices.listCompanyPersonByCity(CompanyPerson, request.params.City, response);
+	});
+
+app.get('/CompanyPerson/:Id', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	console.log(request.url + ' : querying for ' +
+	request.params.Id);
+	dataservices.findCompanyPersonByID(CompanyPerson, request.params.Id,
+	response);
+	});
+
+
+app.put('/PinCode', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	console.log(request.body);
+	dataservices.createPinCode(PinCodes, request.body, response);
+	});
+
+app.post('/PinCode', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	dataservices.updatePinCode(PinCodes, request.body, response);
+	});
+
+	
+app.get('/PinCode', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		console.log('Listing all device with ' + request.params.key +
+				'=' + request.params.value);
+		dataservices.listPinCode(PinCodes, response);
+	});
+
+app.get('/PinCodesByPinCode/:PinCode', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		
+		dataservices.listPinCodeByPinCode(PinCodes, request.params.PinCode, response);
+	});
+
+app.get('/PinCodesByCity/:City', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		
+		dataservices.listPinCodeByCity(PinCodes, request.params.City, response);
+	});
+
+
 
 
 http.createServer(app).listen(app.get('port'), function(){
