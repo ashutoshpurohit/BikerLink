@@ -461,7 +461,7 @@ app.post('/uploadBikerOrPersonImage', function(req, res){
 		}
 	console.log(filename);
 		 var xlFile = req.files.picture;
-  	     var newPath = __dirname  + req.files.picture.name;
+  	     var newPath = __dirname + "/Images/" + req.files.picture.name;
 		 console.log(newPath);
 		 xlFile.mv(newPath, function(err){ 
 		   if(err){
