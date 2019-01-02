@@ -10,13 +10,17 @@ var express = require('express')
   , path = require('path')
   , devicedataservice = require('./modules/devicedataservice')
   , dataservices = require('./modules/dataservices')
-  , mongoose = require('mongoose');
+  , mongoose = require('mongoose')
+  ,fs = require('fs');
 
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var compression = require('compression')
+var cloudinary = require('cloudinary');
+var fileUpload = require('express-fileupload');
+
 
 var app = express();
 
@@ -31,6 +35,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(fileUpload());
+
+cloudinary.config({ 
+	  cloud_name: 'dxrxryauq', 
+	  api_key: '456131671447736', 
+	  api_secret: 'cFE0ehMWYW32GJ-BTxOYAdPnpGk' 
+	});
+
 
 // development only
 if ('development' == app.get('env')) {
@@ -427,7 +440,141 @@ app.get('/PinCodesByCity/:City', function(request, response) {
 		dataservices.listPinCodeByCity(PinCodes, request.params.City, response);
 	});
 
+app.post('/uploadBikerOrPersonImage', function(req, res){
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    
+	var filename = req.files.picture.name;
+	
+	if(filename.endsWith(".jpg") || filename.endsWith(".png") || filename.endsWith(".bmp") || filename.endsWith(".gif"))
+			{
+		       filename  = filename.slice(0, -4);
+			}
+	else 
+		{
+		  
+		  if(filename.endsWith(".jpeg") || filename.endsWith(".html"))
+		   {
+	          filename  = filename.slice(0, -5);
+		   }
+		
+		}
 
+		 var xlFile = req.files.picture;
+  	     var newPath = __dirname  + req.files.picture.name;
+		 
+		 xlFile.mv(newPath, function(err){ 
+		   if(err){
+			   res.send("Error Uploading File");
+		   }
+		   else
+		   {
+	  cloudinary.uploader.upload(
+			  newPath,
+			  function(result) { console.log(result); console.log(result.url); 
+			  var ImageInfo = {
+ 		    		 "ImageName" : filename,
+ 		    		 "ImageUrl": result.url,
+ 		    		 "ImageUploaded": true
+ 		     };
+ 		     res.json(ImageInfo);
+			 fs.unlinkSync(newPath);  
+			  },
+			  {
+			    public_id: filename, 
+			    
+			  }      
+			);
+		   }
+		 });
+});
+
+app.post('/UpdateBikerWithImage', function(request, response){
+	var conditions = {Id: request.body.profileId},
+    update = { ImageURL: request.body.ImgaeURL },
+    options = { multi: false };
+
+	BikerCourier.update(conditions, update, options,
+function callback (err, numAffected) {
+    // numAffected is the number of updated documents
+		if(!err){
+			console.log('Biker Image Updated Successfully');
+			response.json({"code" : 200, "status" : "Biker Image Updated Successfully"});
+		}
+		else{
+			console.log(err);
+			response.json({"code" : 101, "status" : "Error in updating Biker Image with Error " + err});
+		}
+			
+});
+	
+});
+
+app.post('/UpdateBikerIDWithImage', function(request, response){
+	
+	var conditions = {Id: request.body.profileId},
+    update = { IDImageURL: request.body.ImgaeURL },
+    options = { multi: false };
+
+	BikerCourier.update(conditions, update, options,
+function callback (err, numAffected) {
+    // numAffected is the number of updated documents
+		if(!err){
+			console.log('Biker ID Image Updated Successfully');
+			response.json({"code" : 200, "status" : "Biker ID Image Updated Successfully"});
+		}
+		else{
+			console.log(err);
+			response.json({"code" : 101, "status" : "Error in updating Biker ID Image with Error " + err});
+		}
+			
+});
+	
+});
+
+app.post('/UpdatePersonWithImage', function(request, response){
+	
+	var conditions = {Id: request.body.profileId},
+    update = { ImageURL: request.body.ImgaeURL },
+    options = { multi: false };
+
+	CompanyPerson.update(conditions, update, options,
+function callback (err, numAffected) {
+    // numAffected is the number of updated documents
+		if(!err){
+			console.log('Company Person Image Updated Successfully');
+			response.json({"code" : 200, "status" : "Company Person Image Updated Successfully"});
+		}
+		else{
+			console.log(err);
+			response.json({"code" : 101, "status" : "Error in updating Company Person Image with Error " + err});
+		}
+			
+});
+	
+});
+
+app.post('/UpdatePersonWithIDImage', function(request, response){
+	
+	var conditions = {Id: request.body.profileId},
+    update = { IDImageURL: request.body.ImgaeURL },
+    options = { multi: false };
+
+	CompanyPerson.update(conditions, update, options,
+function callback (err, numAffected) {
+    // numAffected is the number of updated documents
+		if(!err){
+			console.log('Company Person Image Updated Successfully');
+			response.json({"code" : 200, "status" : "Company Person Image Updated Successfully"});
+		}
+		else{
+			console.log(err);
+			response.json({"code" : 101, "status" : "Error in updating Company Person Image with Error " + err});
+		}
+			
+});
+	
+});
 
 
 http.createServer(app).listen(app.get('port'), function(){
