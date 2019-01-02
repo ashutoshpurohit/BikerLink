@@ -445,7 +445,7 @@ app.post('/uploadBikerOrPersonImage', function(req, res){
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     
 	var filename = req.files.picture.name;
-	
+	console.log(filename);
 	if(filename.endsWith(".jpg") || filename.endsWith(".png") || filename.endsWith(".bmp") || filename.endsWith(".gif"))
 			{
 		       filename  = filename.slice(0, -4);
@@ -459,12 +459,14 @@ app.post('/uploadBikerOrPersonImage', function(req, res){
 		   }
 		
 		}
-
+	console.log(filename);
 		 var xlFile = req.files.picture;
   	     var newPath = __dirname  + req.files.picture.name;
-		 
+		 console.log(newPath);
 		 xlFile.mv(newPath, function(err){ 
 		   if(err){
+			   console.log("Error Uploading File");
+			   console.log(err);
 			   res.send("Error Uploading File");
 		   }
 		   else
