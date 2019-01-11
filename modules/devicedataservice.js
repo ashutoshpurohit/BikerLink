@@ -137,10 +137,11 @@ exports.updateDevice = function (model, requestBody, response) {
 	device.save(function(error) {
 	if (!error)
 		device.save();
+	else
+		console.log(error);
 	});
 	if (response != null) {
-	response.writeHead(201,
-	{'Content-Type' : 'text/plain'});
+	
 	response.json({"code" : 200, "status" : "Device Created Successfully" , "MobileNumber" : requestBody.MobileNumber });
 	}
 	return;
