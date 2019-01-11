@@ -598,7 +598,7 @@ app.put('/SendMessage', function(request, response) {
 	        "body": request.body.MessageBody,
 	        "title": request.body.MessageTitle,
 	        "priority" : 1,
-	        "date": new Date().yyyymmdd(),
+	        
 	        "notification_id": (staticnotificationid + 1).toString()
 	        
 	    },
