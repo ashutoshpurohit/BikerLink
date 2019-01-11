@@ -11,6 +11,7 @@ var express = require('express')
   , devicedataservice = require('./modules/devicedataservice')
   , dataservices = require('./modules/dataservices')
   , mongoose = require('mongoose')
+  , gcm =  require('node-gcm')
   ,fs = require('fs');
 
 var favicon = require('serve-favicon');
@@ -199,6 +200,8 @@ var CompanyPerson = mongoose.model('CompanyPerson', CompanyPersonMappingSchema);
 var PinCodes = mongoose.model('PinCodes', PinCodeMappingSchema);
 
 var Messages = mongoose.model('Messages', MessageMappingSchema);
+
+var staticnotificationid = 100000;
 
 app.get('/', routes.index);
 app.get('/users', user.list);
@@ -577,6 +580,89 @@ function callback (err, numAffected) {
 });
 	
 });
+
+app.put('/SendMessage', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	Date.prototype.yyyymmdd = function() {
+		   var yyyy = this.getFullYear();
+		   var mm = this.getMonth() < 9 ? "0" + (this.getMonth() + 1) : (this.getMonth() + 1); // getMonth() is zero-based
+		   var dd  = this.getDate() < 10 ? "0" + this.getDate() : this.getDate();
+		   return "".concat(dd).concat("/").concat(mm).concat("/").concat(yyyy);
+		  };
+
+	var message = new gcm.Message({
+	    
+		data: {
+	    	"type" : "Notice",
+	        "body": request.body.MessageBody,
+	        "title": request.body.MessageTitle,
+	        "priority" : 1,
+	        "date": new Date().yyyymmdd(),
+	        "notification_id": (staticnotificationid + 1).toString()
+	        
+	    },
+	    notification: {
+	        title: "From node app CourierBiker Interaction Server ",
+	        icon: "ic_launcher",
+	        body: "This is a notification that will be displayed ASAP."
+	    }
+	});
+	
+	// Set up the sender with you API key
+	var sender = new gcm.Sender('AAAAt7ftYKY:APA91bGMdkut0SZxwWv6SfGrhL6ZO36nmFXZSM6n29mDD4BjwXQIm6poUHQlgukEG6eRsRtyVr8kFBVmQkJvWiC7Lww714--gU37C1Mh0DAwgRrvPBajmm-ErpUFAOeKWfUu7GvFS3KO');
+	var registrationTokens = [];
+	
+	MobileDevice.find({}, function(error, result) {
+		if (error) 
+		{
+		console.error(error);
+		return null;
+		}
+		else
+		{
+			var resultcount =0;
+			if(result !==undefined)
+			{
+				console.log("inside result");
+				console.log(result.length);
+				for(resultcount =0; resultcount<result.length; resultcount++)
+				{
+					console.log("for");
+					console.log(result[resultcount].DeviceId);
+					registrationTokens.push(result[resultcount].DeviceId);
+
+				}
+			}
+
+			// Now the sender can be used to send messages
+			// ... or retrying a specific number of times (10)
+			sender.send(message, { registrationTokens: registrationTokens }, 10, function (err, response) {
+			  if(err) 
+				  {
+				  console.error(err);
+				  }
+			  else   
+				  {
+				   console.log(response);
+				  }
+			});
+	
+	  }
+		
+	});
+
+	
+	
+	// Send to a topic, with no retry this time
+	sender.sendNoRetry(message, { topic: '/topics/global' }, function (err, response) {
+	    if(err) {console.error(" Error " + err);}
+	    else    {console.log("Success " + response);}
+	});
+	
+	
+	response.end('Ended final');
+	});
 
 
 http.createServer(app).listen(app.get('port'), function(){

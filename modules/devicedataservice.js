@@ -23,7 +23,7 @@ exports.createMobileDevice = function (model, requestBody, response)
 			console.log(err);
 			}
 		console.log('Mobile Device saved successfully');
-		response.end('Mobile Device saved');
+		response.json({"code" : 200, "status" : "Device Created Successfully" , "MobileNumber" : requestBody.MobileNumber });
 	});
 }
 
@@ -141,7 +141,7 @@ exports.updateDevice = function (model, requestBody, response) {
 	if (response != null) {
 	response.writeHead(201,
 	{'Content-Type' : 'text/plain'});
-	response.end('Created');
+	response.json({"code" : 200, "status" : "Device Created Successfully" , "MobileNumber" : requestBody.MobileNumber });
 	}
 	return;
 	}
@@ -160,7 +160,7 @@ exports.updateDevice = function (model, requestBody, response) {
 	}
 	});
 	if (response != null) {
-	response.send('Updated');
+		response.json({"code" : 200, "status" : "Device Updated Successfully" , "MobileNumber" : requestBody.MobileNumber });
 	}
 	}
 	});
