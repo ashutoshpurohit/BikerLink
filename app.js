@@ -602,11 +602,11 @@ app.put('/SendMessage', function(request, response) {
 	        "notification_id": (staticnotificationid + 1).toString()
 	        
 	    },
-	    notification: {
-	        title: "From node app CourierBiker Interaction Server ",
-	        icon: "ic_launcher",
-	        body: "This is a notification that will be displayed ASAP."
-	    }
+	    //notification: {
+	        //title: "From node app CourierBiker Interaction Server ",
+	        //icon: "ic_launcher",
+	        //body: "This is a notification that will be displayed ASAP."
+	    //}
 	});
 	
 	// Set up the sender with you API key
