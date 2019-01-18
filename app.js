@@ -732,10 +732,12 @@ app.put('/SendMessageToAllBikersinCity', function(request, response) {
 			sender.send(message, { registrationTokens: registrationTokens }, 10, function (err, resp) {
 			  if(err) 
 				  {
+				  console.log(err);
 				  response.json({"code" : 101, "status" : "Error in Sending Message with Error " + err});
 				  }
 			  else   
 				  {
+				  console.log(resp);
 				  response.json({"code" : 200, "status" : "Message Send Successfully"});
 				  }
 			});
