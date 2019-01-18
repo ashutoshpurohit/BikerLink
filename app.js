@@ -640,7 +640,7 @@ app.put('/SendMessage', function(request, response) {
 			sender.send(message, { registrationTokens: registrationTokens }, 10, function (err, response) {
 			  if(err) 
 				  {
-				  console.error(err);
+				    console.log(err);
 				  }
 			  else   
 				  {
@@ -663,6 +663,91 @@ app.put('/SendMessage', function(request, response) {
 	
 	response.end('Ended final');
 	});
+
+app.put('/SendMessageToAllBikersinCity', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	Date.prototype.yyyymmdd = function() {
+		   var yyyy = this.getFullYear();
+		   var mm = this.getMonth() < 9 ? "0" + (this.getMonth() + 1) : (this.getMonth() + 1); // getMonth() is zero-based
+		   var dd  = this.getDate() < 10 ? "0" + this.getDate() : this.getDate();
+		   return "".concat(dd).concat("/").concat(mm).concat("/").concat(yyyy);
+		  };
+
+	var message = new gcm.Message({
+	    
+		data: {
+			"MessageId": request.body.MessageId,
+	    	"Messagetype" : "PickUpRequest",
+	        "FromName": request.body.FromName,
+	        "CompanyName" : request.body.CompanyName,
+	        "CompanyDesignation" : request.body.CompanyDesignation,
+	        "FromMobile" : request.body.FromMobile,
+	        "PickUpDate" : request.body.PickUpDate,
+	        "ExpectedPickUpTime": request.body.ExpectedPickUpTime,
+	        "PickUpFullAddress" : request.body.PickUpFullAddress,
+	        "PickUpLandmark" : request.body.PickUpLandmark,
+	        "StateName": request.body.StateName,
+	        "City" : request.body.City,
+	        "PinCode": request.body.PinCode,
+	        "NumberOfPackets" : request.body.NumberOfPackets,
+	        "MessageTitle": request.body.MessageTitle,
+	        "Status": "Requested",
+	        "priority" : 1,
+	        
+	        "notification_id": (staticnotificationid + 1).toString()
+	        
+	    },
+	    
+	});
+	
+	// Set up the sender with you API key
+	var sender = new gcm.Sender('AAAAt7ftYKY:APA91bGMdkut0SZxwWv6SfGrhL6ZO36nmFXZSM6n29mDD4BjwXQIm6poUHQlgukEG6eRsRtyVr8kFBVmQkJvWiC7Lww714--gU37C1Mh0DAwgRrvPBajmm-ErpUFAOeKWfUu7GvFS3KO');
+	var registrationTokens = [];
+	
+	MobileDevice.find({MobileNumber: {$in: request.body.Mobiles}}, function(error, result) {
+		if (error) 
+		{
+		console.log(error);
+		return null;
+		}
+		else
+		{
+			var resultcount =0;
+			if(result !==undefined)
+			{
+				console.log("inside result");
+				console.log(result.length);
+				for(resultcount =0; resultcount<result.length; resultcount++)
+				{
+					console.log("for");
+					console.log(result[resultcount].DeviceId);
+					registrationTokens.push(result[resultcount].DeviceId);
+
+				}
+			}
+
+			// Now the sender can be used to send messages
+			// ... or retrying a specific number of times (10)
+			sender.send(message, { registrationTokens: registrationTokens }, 10, function (err, resp) {
+			  if(err) 
+				  {
+				  response.json({"code" : 101, "status" : "Error in Sending Message with Error " + err});
+				  }
+			  else   
+				  {
+				  response.json({"code" : 200, "status" : "Message Send Successfully"});
+				  }
+			});
+	
+	  }
+		
+	});
+
+	
+	response.end('Ended final');
+	});
+
 
 
 http.createServer(app).listen(app.get('port'), function(){
