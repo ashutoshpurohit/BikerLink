@@ -744,8 +744,6 @@ app.put('/SendMessageToAllBikersinCity', function(request, response) {
 		
 	});
 
-	
-	response.end('Ended final');
 	});
 
 
