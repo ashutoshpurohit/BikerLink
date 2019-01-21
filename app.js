@@ -694,6 +694,9 @@ app.put('/SendMessageToAllBikersinCity', function(request, response) {
 	        "MessageTitle": request.body.MessageTitle,
 	        "Status": "Requested",
 	        "priority" : 1,
+	        "NumberofPacktesAccepted": request.body.NumberofPacktesAccepted,
+	        "FromImage": request.body.FromImage,
+	        "ToImage" : request.body.ToImage,
 	        
 	        "notification_id": (staticnotificationid + 1).toString()
 	        
