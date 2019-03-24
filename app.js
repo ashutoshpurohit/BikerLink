@@ -63,6 +63,25 @@ mongoose.connect(dbURI);
 
 console.log('Connected to DB ' + dbURI);
 
+var FlightDataMappingSchema = new mongoose.Schema({
+	FlightId: String,
+	FlightDate: Date,
+	Source: String,
+	Destination: String,
+	AirFlightPath: [
+		{
+			Latitude: Number,
+			Longitude: Number,
+			Altitude: Number,
+			Speed: Number,
+			Direction: Number,
+			TimeSlice: String,
+			TimeStamp: Number			
+		}
+	]
+	
+});
+
 var MobileDeviceMappingSchema = new mongoose.Schema({
 	MobileNumber: Number,
 	DeviceId: String,
@@ -201,10 +220,21 @@ var PinCodes = mongoose.model('PinCodes', PinCodeMappingSchema);
 
 var Messages = mongoose.model('Messages', MessageMappingSchema);
 
+var FlightData = mongoose.model('FlightData', FlightDataMappingSchema);
+
 var staticnotificationid = 100000;
 
-app.get('/', routes.index);
-app.get('/users', user.list);
+app.get('/', function(request,response){
+	response.json({"Message" : "CONNECTED"
+		});
+});
+
+app.get('/leds', function(request,response){
+	response.json({"id" : 12,
+		"gpio": 15,
+		"status:" : 0,
+		});
+});
 
 app.get('/Nidhi', function(request,response){
 	response.json({"Name" : "Hi",
@@ -217,6 +247,28 @@ app.post('/Ashu', function(request, response){
 	console.log(request.body.Name);
 	console.log(request.body.Age);
 })
+
+app.post('/AirFlight', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	devicedataservice.updateFlightData(FlightData, request.body, response);
+	});
+
+app.put('/AirFlight', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	
+	devicedataservice.createFlightData(FlightData, request.body, response);
+	});
+	
+
+	
+app.get('/AirFlight', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		
+		devicedataservice.listFlightData(FlightData, response);
+	});
 
 app.get('/getdevicesByMobile/:MobileNumber', function(request, response) {
 	response.header("Access-Control-Allow-Origin", "*");

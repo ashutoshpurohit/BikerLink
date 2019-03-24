@@ -1,6 +1,43 @@
 /**
  * http://usejsdoc.org/
  */
+
+function toAirFlightPathList(bodyAirFlightPath){
+	var flightpaths = [];
+	var pathcount =0;
+	if(bodyAirFlightPath != undefined){
+		for(pathcount = 0; pathcount < bodyAirFlightPath.length; pathcount++){
+			var path = {
+					Latitude: bodyAirFlightPath[pathcount].Latitude,
+					Longitude: bodyAirFlightPath[pathcount].Longitude,
+					Altitude: bodyAirFlightPath[pathcount].Altitude,
+					Speed:bodyAirFlightPath[pathcount].Speed,
+					Direction: bodyAirFlightPath[pathcount].Direction,
+					TimeSlice: bodyAirFlightPath[pathcount].TimeSlice,
+					TimeStamp:bodyAirFlightPath[pathcount].TimeStamp,
+					
+			};
+			
+			flightpaths.push(path);
+		}
+	}
+	
+	return flightpaths;
+}
+
+function toAirFlight(body, FlightData){
+	var flight = new FlightData(
+			{
+				FlightId : body.FlightId,
+				FlightDate: body.FlightDate,
+				Source: body.Source,
+				Destination: body.Destination,
+				AirFlightPath: toAirFlightPathList(body.AirFlightPath)
+			});
+	
+	return flight;
+}
+
 function toDevice(body, MobileDevice) {
 var mobiledevice =  new MobileDevice(
 {
@@ -11,6 +48,50 @@ var mobiledevice =  new MobileDevice(
 
 return mobiledevice;
 }
+
+exports.createFlightData = function (model, requestBody, response)
+{
+	var flight = toAirFlight(requestBody, model);
+	
+	flight.save(function(err){
+		if (err)
+			{
+			//throw err;
+			console.log(err);
+			}
+		console.log('AirFlight  saved successfully');
+		response.json({"code" : 200, "status" : "AirFlight Created Successfully" , "FlightID" : requestBody.FlightId });
+	});
+}
+
+exports.updateFlightData = function (model, requestBody, response)
+{
+	var flight = toAirFlight(requestBody, model);
+	
+	flight.save(function(err){
+		if (err)
+			{
+			//throw err;
+			console.log(err);
+			}
+		console.log('AirFlight  saved successfully');
+		response.json({"code" : 200, "status" : "AirFlight Created Successfully" , "FlightID" : requestBody.FlightId });
+	});
+}
+
+exports.listFlightData = function (model, response) {
+	model.find({}, function(error, result) {
+	if (error) {
+	console.error(error);
+	return null;
+	}
+	if (response != null) {
+	response.setHeader('content-type', 'application/json');
+	response.end(JSON.stringify(result));
+	}
+	return JSON.stringify(result);
+	});
+	}
 
 exports.createMobileDevice = function (model, requestBody, response)
 {
