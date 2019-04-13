@@ -68,6 +68,7 @@ var FlightDataMappingSchema = new mongoose.Schema({
 	FlightDate: Date,
 	Source: String,
 	Destination: String,
+	FlightDateStr : String,
 	AirFlightPath: [
 		{
 			Latitude: Number,
@@ -80,6 +81,88 @@ var FlightDataMappingSchema = new mongoose.Schema({
 		}
 	]
 	
+});
+
+var FlightTrajectoryMappingSchema = new mongoose.Schema({
+	Source: String,
+	Destination: String,
+	
+	AirFlightPath: [
+		{
+			Latitude: Number,
+			Longitude: Number,
+			Altitude: Number,
+			Speed: Number,
+			Direction: Number,
+			
+		}
+	]
+	
+});
+
+var WeatherDataMappingSchema = new mongoose.Schema({
+	latitude: Number,
+	longitude: Number,
+	altitude: Number,
+	DateStr: String,
+	TimeStr: String,
+	temperature: {
+		units: String,
+		value : Number,
+		dew_point: Number,
+		wind_chill: Number
+	},
+	relative_humidity:{
+		units: String,
+		value : Number,
+	},
+	cloud_cover: {
+		units: String,
+		value : Number,
+		text : String,
+	},
+	weather_code: {
+		value : Number,
+		text : String,
+	},
+	cloud_ceiling:{
+		units: String,
+		value : Number,
+	},
+	pressure: {
+		units: String,
+		value : Number,
+	},
+	daylight: Boolean,
+	visibility: {
+		units: String,
+		value : Number,
+	},
+	wind: {
+		speed: Number,
+		speed_units: String,
+		dir_units: String,
+		dir: Number
+	},
+	precipitation: {
+		probability: {
+			units: String,
+			value : Number,
+		}
+	},
+	station: {
+		priority: Number,
+		coordinates: [
+			Number
+		],
+		elev: {
+			units: String,
+			value : Number,
+		},
+		id: String,
+		Name: String,
+	},
+	issuetime: Date
 });
 
 var MobileDeviceMappingSchema = new mongoose.Schema({
@@ -222,6 +305,10 @@ var Messages = mongoose.model('Messages', MessageMappingSchema);
 
 var FlightData = mongoose.model('FlightData', FlightDataMappingSchema);
 
+var WeatherData = mongoose.model('WeatherData', WeatherDataMappingSchema);
+
+var FlightTrajectory = mongoose.model('FlightTrajectory', FlightTrajectoryMappingSchema);
+
 var staticnotificationid = 100000;
 
 app.get('/', function(request,response){
@@ -260,6 +347,34 @@ app.put('/AirFlight', function(request, response) {
 	
 	devicedataservice.createFlightData(FlightData, request.body, response);
 	});
+
+
+
+app.post('/FlightTrajectory', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	devicedataservice.updateFlightTrajectory(FlightTrajectory, request.body, response);
+	});
+
+app.put('/FlightTrajectory', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	
+	devicedataservice.createFlightTrajectory(FlightTrajectory, request.body, response);
+	});
+
+app.post('/WeatherData', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	devicedataservice.createWeatherData(WeatherData, request.body, response);
+	});
+
+app.put('/WeatherData', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	
+	devicedataservice.createWeatherData(WeatherData, request.body, response);
+	});
 	
 
 	
@@ -269,6 +384,123 @@ app.get('/AirFlight', function(request, response) {
 		
 		devicedataservice.listFlightData(FlightData, response);
 	});
+
+
+
+app.get('/FlightTrajectory', function(request, response) {
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		
+		devicedataservice.listFlightTrajectory(FlightTrajectory, response);
+	});
+
+app.get('/GetAirFlight/:FlightId', function(request, response){
+	
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	
+	devicedataservice.listFlightDataByFlightId(FlightData, request.params.FlightId ,response);
+	
+});
+
+app.get('/GetAirFlightForSourceDestiation', function(request, response){
+	
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	
+	devicedataservice.listAirFlightForSourceDestiation(FlightData, request.param('Source'), request.param('Destination') ,response);
+	
+});
+
+
+
+app.get('/GetAirFlightTrajectoryForSourceDestiation', function(request, response){
+	
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	
+	devicedataservice.listFlightTrajectoryForSourceDestiation(FlightTrajectory, request.param('Source'), request.param('Destination') ,response);
+	
+});
+
+app.get('GetWeatherData', function(request, response){
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	
+	WeatherData.find({latitude: request.param('latitude'), longitude : request.param('longitude')}, function(error, result) {
+		if (error) {
+		console.error(error);
+		return null;
+		}
+		if (response != null) {
+		response.setHeader('content-type', 'application/json');
+		response.end(JSON.stringify(result));
+		}
+		return JSON.stringify(result);
+		});
+	
+});
+
+app.get('GetAllWeatherData', function(request, response) {
+	WeatherData.find({}, function(error, result) {
+		if (error) {
+		console.error(error);
+		return null;
+		}
+		if (response != null) {
+		response.setHeader('content-type', 'application/json');
+		response.end(JSON.stringify(result));
+		}
+		return JSON.stringify(result);
+		});
+});
+
+app.get('GetWeatherDataForAltitude', function(request, response){
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	
+	WeatherData.find({latitude: request.param('latitude'), longitude : request.param('longitude'), altitude: request.param('altitude')}, function(error, result) {
+		if (error) {
+		console.error(error);
+		return null;
+		}
+		if (response != null) {
+		response.setHeader('content-type', 'application/json');
+		response.end(JSON.stringify(result));
+		}
+		return JSON.stringify(result);
+		});
+	
+});
+
+app.get('/GetAirFlightForSourceDestiationForDate', function(request, response){
+	
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	
+	devicedataservice.listAirFlightForSourceDestiationForDate(FlightData, request.param('Source'), request.param('Destination'), request.param('DateStr') ,response);
+	
+});
+
+app.get('/GetAirFlightForFlightIdForDate', function(request, response){
+	
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	
+	devicedataservice.listAirFlightForFlightIdForDate(FlightData, request.param('FlightId'), request.param('DateStr') ,response);
+	
+});
+
+
+
+app.del('/DeleteAllFlights', function(request, response){
+	response.header("Access-Control-Allow-Origin", "*");
+	response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	FlightData.deleteMany({}, function(error, data){
+		
+	});
+		//devicedataservice.deleteAllFlights(FlightData, response);
+});
 
 app.get('/getdevicesByMobile/:MobileNumber', function(request, response) {
 	response.header("Access-Control-Allow-Origin", "*");
