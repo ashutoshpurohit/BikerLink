@@ -317,18 +317,21 @@ app.get('/', function(request,response){
 });
 
 app.get('/leds', function(request,response){
-	response.json({"NAME" : "Ashutosh",
-		"DATE": "6\03\2019",
-		"TEMPERATURE": "37.5",
-		"MILK:" : "Cow",
-		"FAT": 80,
-		"SNF": 6.8,
-		"CLR" :4,
-		"Salt": 2.1,
-		"L": 1.2,
-		"AW": 2.2,
-		"Fp": 3.2,
-		"P": 4.2,
+	response.json({"NAME" : "AMA-40",
+		"DATE": "6\\03\\2019",
+		"TIME": "13:31",
+			"TEMPERATURE": "26.9 c",
+			"MILK:" : "MIXED MILK",
+			"FAT": 3.5,
+			"SNF": 8,
+			"CLR" :27.5,
+			"P": 3.3,
+			"D": 30.5,
+			"Salt": 0.7,
+			"L": 5,
+			"AW": 0,
+			"Fp": -0.569,
+		
 		
 		});
 });
