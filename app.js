@@ -317,9 +317,26 @@ app.get('/', function(request,response){
 });
 
 app.get('/leds', function(request,response){
+	response.json({"NAME" : "Ashutosh",
+		"DATE": "6\03\2019",
+		"TEMPERATURE": "37.5",
+		"MILK:" : "Cow",
+		"FAT": 80,
+		"SNF": 6.8,
+		"CLR" :4,
+		"Salt": 2.1,
+		"L": 1.2,
+		"AW": 2.2,
+		"Fp": 3.2,
+		"P": 4.2,
+		
+		});
+});
+
+app.get('/Weight', function(request,response){
 	response.json({"id" : 12,
-		"gpio": 15,
-		"status:" : 0,
+		"Weight": 3.6,
+		
 		});
 });
 
