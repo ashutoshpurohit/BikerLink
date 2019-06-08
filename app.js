@@ -318,10 +318,10 @@ app.get('/', function(request,response){
 
 app.get('/leds', function(request,response){
 	response.json({"NAME" : "AMA-40",
-		"DATE": "6\\03\\2019",
+		"DATE": 0,
 		"TIME": "13:31",
 			"TEMPERATURE": "26.9 c",
-			"MILK:" : "MIXED MILK",
+			"MILK" : "MIXED MILK",
 			"FAT": 3.5,
 			"SNF": 8,
 			"CLR" :27.5,
